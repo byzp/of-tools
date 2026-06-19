@@ -18,12 +18,6 @@ from scapy.all import Raw, sniff
 
 from algo import SwirlNoiseGenHelper
 
-# of-ps proto modules
-if getattr(sys, "frozen", False):
-    _OF_PS = os.path.join(sys._MEIPASS, "of-ps")
-else:
-    _OF_PS = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "of-ps"))
-sys.path.insert(0, _OF_PS)
 from network.msg_id import MsgId
 from proto.net_pb2 import OutfitColorantSelectRsp, PacketHead
 
