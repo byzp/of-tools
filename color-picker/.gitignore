@@ -1,0 +1,17 @@
+# C++ build intermediates / output
+cpp/obj/
+cpp/*.obj
+cpp/*.ilk
+cpp/*.pdb
+cpp/picker.exe
+cpp/build/
+# local machine-specific MSVC env override (absolute paths)
+cpp/_env.bat
+
+# Python
+__pycache__/
+*.pyc
+python/net_pb2.py
+python/build/
+python/dist/
+python/*.spec
