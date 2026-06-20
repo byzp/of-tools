@@ -178,7 +178,7 @@ _STEP = 0.001
 _COLOR_COUNT = 5
 
 
-def _search(target_hex: str, params: dict) -> dict | None:
+def _search(target_hex: str, params: dict) -> tuple[dict | None, list | None]:
     target_rgb = hex_to_rgb(target_hex)
     pid = params.get("picture_id", 1)
     tex = Image.open(_texture_path(pid)).convert("RGBA")
@@ -187,18 +187,21 @@ def _search(target_hex: str, params: dict) -> dict | None:
     h.set_swirl_params(arr, tex)
 
     best, best_sim = None, -1.0
+    best_colors = None
     for uvy in np.linspace(0.0, 1.0, int(round(1.0 / _STEP)) + 1, dtype=np.float32):
-        for idx, (r, g, b, a) in enumerate(h.get_color_array(float(uvy), _COLOR_COUNT)):
+        colors = h.get_color_array(float(uvy), _COLOR_COUNT)
+        for idx, (r, g, b, a) in enumerate(colors):
             sim = _cie76(target_rgb, (r, g, b))
             if sim > best_sim:
                 best_sim = sim
+                best_colors = colors
                 best = {
                     "hex": rgb_to_hex((r, g, b)),
                     "sim": round(sim, 4),
                     "uvy": round(float(uvy), 4),
                     "slot": idx + 1,
                 }
-    return best
+    return best, best_colors
 
 
 def _search_bg(target_hex: str, params: dict):
@@ -206,8 +209,16 @@ def _search_bg(target_hex: str, params: dict):
 
 
 def _do_search(target_hex: str, params: dict):
-    r = _search(target_hex, params)
+    r, colors = _search(target_hex, params)
     if r:
+        r["colors"] = colors
+        r["target_hex"] = f"#{target_hex}"
+        try:
+            import ui
+
+            ui.send_result(r)
+        except Exception:
+            pass
         print(
             f"  {target_hex} -> {r['hex']}  sim={r['sim']*100}%  uvy={r['uvy']}  slot={r['slot']}"
         )
@@ -219,21 +230,16 @@ def main():
         sys.exit(1)
 
     start_sniffer()
-    while True:
-        try:
-            raw = input("> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print()
-            break
-        if not raw:
-            continue
-        raw = raw.lstrip("#")
-        if len(raw) != 6 or not all(c in "0123456789abcdefABCDEF" for c in raw):
-            continue
+
+    import ui
+
+    def on_target_changed(hex_str: str):
         global _current_target
-        _current_target = raw
+        _current_target = hex_str.lstrip("#")
         if _captured_params is not None:
             _search_bg(_current_target, _captured_params)
+
+    ui.create_picker_window(on_target_changed=on_target_changed)
 
 
 if __name__ == "__main__":
