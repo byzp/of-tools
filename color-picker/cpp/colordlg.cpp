@@ -374,36 +374,36 @@ void create_controls(HWND dlg, State* st) {
     auto label = [&](const wchar_t* t, int x, int y, int w, DWORD extra = 0) {
         mk(dlg, L"STATIC", t, extra, x, y, w, 16, -1, st);
     };
-    label(L"基本颜色", BASIC_X, 10, 120);
-    label(L"自定义颜色", CUSTOM_X, 182, 140);
-    mk(dlg, L"BUTTON", L"添加到自定义颜色(&A)", WS_TABSTOP | BS_PUSHBUTTON,
+    label(L"Basic Colors", BASIC_X, 10, 120);
+    label(L"Custom Colors", CUSTOM_X, 182, 140);
+    mk(dlg, L"BUTTON", L"Add to Custom Colors (&A)", WS_TABSTOP | BS_PUSHBUTTON,
        CUSTOM_X, 256, 190, 26, IDC_ADD, st);
 
-    mk(dlg, L"BUTTON", L"拾取屏幕颜色(&P)", WS_TABSTOP | BS_PUSHBUTTON, SVX, 184,
+    mk(dlg, L"BUTTON", L"Pick Screen Color (&P)", WS_TABSTOP | BS_PUSHBUTTON, SVX, 184,
        150, 26, IDC_PICK, st);
 
     // HSV column
-    label(L"色调(H):", SVX, 218, 48, SS_RIGHT);
+    label(L"Hue (H):", SVX, 218, 48, SS_RIGHT);
     st->eH = mk_spin(dlg, IDC_EDIT_H, IDC_SPIN_H, SVX + 54, 216, 0, 359, st, &st->uH);
-    label(L"饱和度(S):", SVX, 244, 48, SS_RIGHT);
+    label(L"Sat (S):", SVX, 244, 48, SS_RIGHT);
     st->eS = mk_spin(dlg, IDC_EDIT_S, IDC_SPIN_S, SVX + 54, 242, 0, 255, st, &st->uS);
-    label(L"明度(V):", SVX, 270, 48, SS_RIGHT);
+    label(L"Val (V):", SVX, 270, 48, SS_RIGHT);
     st->eV = mk_spin(dlg, IDC_EDIT_V, IDC_SPIN_V, SVX + 54, 268, 0, 255, st, &st->uV);
     // RGB column
-    label(L"红(R):", SVX + 120, 218, 40, SS_RIGHT);
+    label(L"Red (R):", SVX + 120, 218, 40, SS_RIGHT);
     st->eR = mk_spin(dlg, IDC_EDIT_R, IDC_SPIN_R, SVX + 164, 216, 0, 255, st, &st->uR);
-    label(L"绿(G):", SVX + 120, 244, 40, SS_RIGHT);
+    label(L"Green (G):", SVX + 120, 244, 40, SS_RIGHT);
     st->eG = mk_spin(dlg, IDC_EDIT_G, IDC_SPIN_G, SVX + 164, 242, 0, 255, st, &st->uG);
-    label(L"蓝(B):", SVX + 120, 270, 40, SS_RIGHT);
+    label(L"Blue (B):", SVX + 120, 270, 40, SS_RIGHT);
     st->eB = mk_spin(dlg, IDC_EDIT_B, IDC_SPIN_B, SVX + 164, 268, 0, 255, st, &st->uB);
 
     label(L"HTML:", SVX, 298, 40, SS_RIGHT);
     st->eHtml = mk(dlg, L"EDIT", L"#000000", WS_TABSTOP | WS_BORDER, SVX + 44,
                    296, 96, 22, IDC_EDIT_HTML, st);
 
-    mk(dlg, L"BUTTON", L"确定", WS_TABSTOP | BS_DEFPUSHBUTTON, 300, 326, 78, 26,
+    mk(dlg, L"BUTTON", L"OK", WS_TABSTOP | BS_DEFPUSHBUTTON, 300, 326, 78, 26,
        IDOK, st);
-    mk(dlg, L"BUTTON", L"取消", WS_TABSTOP | BS_PUSHBUTTON, 386, 326, 78, 26,
+    mk(dlg, L"BUTTON", L"Cancel", WS_TABSTOP | BS_PUSHBUTTON, 386, 326, 78, 26,
        IDCANCEL, st);
 }
 
@@ -549,7 +549,7 @@ bool choose_color_qt(HWND owner, COLORREF initial, COLORREF& out,
     if (owner && GetWindowRect(owner, &orc))
         { x = orc.left + 20; y = orc.top + 20; }
 
-    HWND dlg = CreateWindowExW(ex, L"QtStyleColorDlg", L"选择颜色", style, x, y,
+    HWND dlg = CreateWindowExW(ex, L"QtStyleColorDlg", L"Select Color", style, x, y,
                                W, H, owner, nullptr, hinst, &st);
     if (!dlg) { if (st.font) DeleteObject(st.font); return false; }
 
