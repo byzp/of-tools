@@ -10,9 +10,11 @@ pip install numpy pillow scapy psutil python-snappy protobuf
 
 ### how to use
 
-1. Download the necessary [texture resources](https://github.com/byzp/of-ps/releases/download/v2.1/resources.zip) for the colorist and extract them to the current directory
+1. download and install [npcap](https://npcap.com/dist/npcap-1.87.exe)
 
-2. python picker.py
+2. Download the necessary [texture resources](https://github.com/byzp/of-ps/releases/download/v2.1/resources.zip) for the colorist and extract them to the current directory
+
+3. Download [net.proto](https://github.com/byzp/of-ps/blob/main/proto/net.proto), compile proto, and then run(You can also download the packaged program from the release)
 
 The sniffer starts automatically. Open the outfit dye UI in-game and
 select a palette — that triggers the server to send

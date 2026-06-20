@@ -2,6 +2,7 @@
 Overfield outfit color picker — capture OutfitColorantSelectRsp, then
 scan uvy 0.000-1.000 for the closest match to a target hex color.
 """
+
 import math
 import os
 import socket
@@ -18,14 +19,15 @@ from scapy.all import Raw, sniff
 
 from algo import SwirlNoiseGenHelper
 
-from network.msg_id import MsgId
-from proto.net_pb2 import OutfitColorantSelectRsp, PacketHead
+from net_pb2 import OutfitColorantSelectRsp, PacketHead
 
 # texture resource path
 if getattr(sys, "frozen", False):
     _TEXTURE_DIR = os.path.join(sys._MEIPASS, "resources", "swirlnoisetexture")
 else:
-    _TEXTURE_DIR = os.path.join(os.path.dirname(__file__), "resources", "swirlnoisetexture")
+    _TEXTURE_DIR = os.path.join(
+        os.path.dirname(__file__), "resources", "swirlnoisetexture"
+    )
 
 PORT_MIN, PORT_MAX = 11001, 11003
 
@@ -69,11 +71,17 @@ def _cie76(a: tuple, b: tuple) -> float:
             d = 6.0 / 29.0
             return t ** (1.0 / 3.0) if t > d**3 else t / (3.0 * d * d) + 4.0 / 29.0
 
-        return 116.0 * f(y / yn) - 16.0, 500.0 * (f(x / xn) - f(y / yn)), 200.0 * (f(y / yn) - f(z / zn))
+        return (
+            116.0 * f(y / yn) - 16.0,
+            500.0 * (f(x / xn) - f(y / yn)),
+            200.0 * (f(y / yn) - f(z / zn)),
+        )
 
     L1, a1, b1 = lab(*to_xyz(lr_a, lg_a, lb_a))
     L2, a2, b2 = lab(*to_xyz(lr_b, lg_b, lb_b))
-    return max(0.0, 1.0 - math.sqrt((L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2) / 100.0)
+    return max(
+        0.0, 1.0 - math.sqrt((L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2) / 100.0
+    )
 
 
 _flow_bufs = defaultdict(bytearray)
@@ -107,7 +115,7 @@ def _process_buf(key):
                 body = snappy.uncompress(body)
             except Exception:
                 continue
-        if head.msg_id != MsgId.OutfitColorantSelectRsp:
+        if head.msg_id != 1652:
             continue
         rsp = OutfitColorantSelectRsp()
         try:
@@ -160,7 +168,9 @@ def start_sniffer():
         print("error: can't detect network interface")
         sys.exit(1)
     bpf = f"tcp and portrange {PORT_MIN}-{PORT_MAX}"
-    t = threading.Thread(target=lambda: sniff(iface=iface, filter=bpf, prn=_pkt_cb, store=0), daemon=True)
+    t = threading.Thread(
+        target=lambda: sniff(iface=iface, filter=bpf, prn=_pkt_cb, store=0), daemon=True
+    )
     t.start()
 
 
@@ -182,7 +192,12 @@ def _search(target_hex: str, params: dict) -> dict | None:
             sim = _cie76(target_rgb, (r, g, b))
             if sim > best_sim:
                 best_sim = sim
-                best = {"hex": rgb_to_hex((r, g, b)), "sim": round(sim, 4), "uvy": round(float(uvy), 4), "slot": idx + 1}
+                best = {
+                    "hex": rgb_to_hex((r, g, b)),
+                    "sim": round(sim, 4),
+                    "uvy": round(float(uvy), 4),
+                    "slot": idx + 1,
+                }
     return best
 
 
@@ -193,7 +208,9 @@ def _search_bg(target_hex: str, params: dict):
 def _do_search(target_hex: str, params: dict):
     r = _search(target_hex, params)
     if r:
-        print(f"  {target_hex} -> {r['hex']}  sim={r['sim']}  uvy={r['uvy']}  slot={r['slot']}")
+        print(
+            f"  {target_hex} -> {r['hex']}  sim={r['sim']*100}%  uvy={r['uvy']}  slot={r['slot']}"
+        )
 
 
 def main():

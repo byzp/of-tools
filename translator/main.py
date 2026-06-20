@@ -13,8 +13,7 @@ import traceback
 import socket
 from scapy.all import sniff, Raw, conf
 import snappy
-import net_pb2 as OverField_pb2
-from msg_id import MsgId
+from net_pb2 import PacketHead, ChatMsgNotice
 import logging
 import yaml
 from ui import create_floating_window, send_text
@@ -23,11 +22,6 @@ import translate
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-id_to_name = {
-    v: k
-    for k, v in vars(MsgId).items()
-    if not k.startswith("__") and isinstance(v, int)
-}
 
 flow_buffers = defaultdict(bytearray)
 
@@ -102,7 +96,7 @@ def process_flow_buffer(flow_key):
         if len(buf) < 2 + header_len:
             break
         header_data = bytes(buf[2 : 2 + header_len])
-        packet_head = OverField_pb2.PacketHead()
+        packet_head = PacketHead()
         try:
             packet_head.ParseFromString(header_data)
         except Exception:
@@ -111,7 +105,7 @@ def process_flow_buffer(flow_key):
             except Exception:
                 break
             continue
-        total_needed = 2 + header_len + getattr(packet_head, "body_len", 0)
+        total_needed = 2 + header_len + packet_head.body_len
         if len(buf) < total_needed:
             break
         body_data = bytes(buf[2 + header_len : 2 + header_len + packet_head.body_len])
@@ -119,7 +113,7 @@ def process_flow_buffer(flow_key):
             del buf[:total_needed]
         except Exception:
             break
-        if getattr(packet_head, "flag", 0) == 1:
+        if packet_head.flag:
             try:
                 body_data = snappy.uncompress(body_data)
             except Exception:
@@ -128,22 +122,13 @@ def process_flow_buffer(flow_key):
                 except Exception:
                     pass
                 continue
-        msgid = getattr(packet_head, "msg_id", None)
-        if msgid is None:
+        msgid = packet_head.msg_id
+        if msgid != 1936:
             continue
-        proto_name = id_to_name.get(msgid)
-        proto_cls = getattr(OverField_pb2, proto_name, None)
-        if proto_cls is None:
-            continue
-        try:
-            sy = proto_cls()
-            sy.ParseFromString(body_data)
-            txt = getattr(sy.msg, "text", "")
-            name = getattr(sy.msg, "name", "")
-            if txt:
-                schedule_translation(name, txt)
-        except Exception:
-            continue
+
+        sy = ChatMsgNotice()
+        sy.ParseFromString(body_data)
+        schedule_translation(sy.msg.name, sy.msg.text)
 
 
 def pkt_callback(

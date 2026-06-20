@@ -3,7 +3,7 @@
 ### how to use
 1. download and install [npcap](https://npcap.com/dist/npcap-1.87.exe)
 
-2. Download [net.proto](https://github.com/byzp/of-ps/blob/main/proto/net.proto) and [msd_id.py](https://github.com/byzp/of-ps/blob/main/network/msg_id.py), compile proto, and then run(You can also download the packaged program from the release)
+2. Download [net.proto](https://github.com/byzp/of-ps/blob/main/proto/net.proto), compile proto, and then run(You can also download the packaged program from the release)
 
 ### config.json
 
